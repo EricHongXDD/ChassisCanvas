@@ -329,11 +329,14 @@ func parseFontFile(path string) (*opentype.Font, error) {
 }
 
 func loadSystemFonts() map[string]*opentype.Font {
-	fonts := make(map[string]*opentype.Font)
 	if runtime.GOOS != "windows" {
-		return fonts
+		return make(map[string]*opentype.Font)
 	}
-	fontDirectory := filepath.Join(os.Getenv("WINDIR"), "Fonts")
+	return loadSystemFontsFromDirectory(filepath.Join(os.Getenv("WINDIR"), "Fonts"))
+}
+
+func loadSystemFontsFromDirectory(fontDirectory string) map[string]*opentype.Font {
+	fonts := make(map[string]*opentype.Font)
 	type weightFiles struct {
 		weight string
 		names  []string
@@ -345,10 +348,10 @@ func loadSystemFonts() map[string]*opentype.Font {
 	// 每个逻辑字体族都显式定义四档。某些 Windows 字库只提供
 	// 两张字脸，此时先选最接近的真实文件，再由绘制层做可控细化/膨胀。
 	families := []familyFiles{
-		{"pangmen", []weightFiles{{"light", []string{"Dengl.ttf", "Deng.ttf"}}, {"regular", []string{"Deng.ttf", "msyh.ttc"}}, {"medium", []string{"Dengb.ttf", "Deng.ttf"}}, {"bold", []string{"Dengb.ttf", "msyhbd.ttc"}}}},
+		{"pangmen", []weightFiles{{"light", []string{"Dengl.ttf", "Deng.ttf", "msyhl.ttc", "msyh.ttc"}}, {"regular", []string{"Deng.ttf", "msyh.ttc"}}, {"medium", []string{"Dengb.ttf", "Deng.ttf", "msyhbd.ttc", "msyh.ttc"}}, {"bold", []string{"Dengb.ttf", "msyhbd.ttc"}}}},
 		{"source-han", []weightFiles{{"light", []string{"msyhl.ttc", "msyh.ttc"}}, {"regular", []string{"msyh.ttc"}}, {"medium", []string{"NotoSansSC-VF.ttf", "msyhbd.ttc"}}, {"bold", []string{"msyhbd.ttc", "NotoSansSC-VF.ttf"}}}},
 		{"microsoft-yahei", []weightFiles{{"light", []string{"msyhl.ttc", "msyh.ttc"}}, {"regular", []string{"msyh.ttc"}}, {"medium", []string{"msyhbd.ttc", "msyh.ttc"}}, {"bold", []string{"msyhbd.ttc"}}}},
-		{"simhei", []weightFiles{{"light", []string{"simhei.ttf", "msyhl.ttc"}}, {"regular", []string{"simhei.ttf"}}, {"medium", []string{"simhei.ttf", "msyhbd.ttc"}}, {"bold", []string{"simhei.ttf", "msyhbd.ttc"}}}},
+		{"simhei", []weightFiles{{"light", []string{"simhei.ttf", "msyhl.ttc"}}, {"regular", []string{"simhei.ttf", "msyh.ttc"}}, {"medium", []string{"simhei.ttf", "msyhbd.ttc"}}, {"bold", []string{"simhei.ttf", "msyhbd.ttc"}}}},
 		{"digital", []weightFiles{{"light", []string{"LiquidCrystal-Light.otf", "consola.ttf"}}, {"regular", []string{"LiquidCrystal-Normal.otf", "consola.ttf"}}, {"medium", []string{"LiquidCrystal-Bold.otf", "consolab.ttf"}}, {"bold", []string{"LiquidCrystal-ExBold.otf", "consolab.ttf"}}}},
 		{"monospace", []weightFiles{{"light", []string{"CascadiaMono.ttf", "consola.ttf"}}, {"regular", []string{"consola.ttf"}}, {"medium", []string{"consolab.ttf", "consola.ttf"}}, {"bold", []string{"consolab.ttf"}}}},
 		{"rounded", []weightFiles{{"light", []string{"YuGothL.ttc", "msyhl.ttc"}}, {"regular", []string{"YuGothR.ttc", "msyh.ttc"}}, {"medium", []string{"YuGothM.ttc", "msyhbd.ttc"}}, {"bold", []string{"YuGothB.ttc", "msyhbd.ttc"}}}},

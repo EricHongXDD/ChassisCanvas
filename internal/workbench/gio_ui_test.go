@@ -552,9 +552,10 @@ func TestPaletteSingleClickCreatesOneLayer(t *testing.T) {
 	gtx := layout.Context{Ops: &operations, Source: router.Source(), Constraints: layout.Exact(image.Pt(1500, 900)), Metric: unit.Metric{PxPerDp: 1, PxPerSp: 1}}
 	frame := func() { gtx.Reset(); model.layout(gtx); router.Frame(gtx.Ops) }
 	frame()
+	telemetryPoint := findPaletteButtonPoint(t, model, &router, frame, caseTheme.LayerTelemetry, 900)
 	router.Queue(
-		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Press, Position: f32.Pt(116, 194)},
-		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Release, Position: f32.Pt(116, 194)},
+		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Press, Position: telemetryPoint},
+		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Release, Position: telemetryPoint},
 	)
 	frame()
 	if len(model.manifest.Layers) != 1 || model.manifest.Layers[0].Type != caseTheme.LayerTelemetry {
@@ -584,11 +585,12 @@ func TestPaletteDragCreatesLayerAndCanvasDragMovesIt(t *testing.T) {
 		router.Frame(gtx.Ops)
 	}
 	frame()
+	telemetryPoint := findPaletteButtonPoint(t, model, &router, frame, caseTheme.LayerTelemetry, 900)
 
 	// 从左侧“遥测”按钮拖到画布中心。
 	router.Queue(
-		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Press, Position: f32.Pt(116, 194)},
-		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Move, Position: f32.Pt(116, 194)},
+		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Press, Position: telemetryPoint},
+		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Move, Position: telemetryPoint},
 		pointer.Event{Source: pointer.Mouse, Buttons: pointer.ButtonPrimary, Kind: pointer.Release, Position: f32.Pt(698, 477)},
 	)
 	frame()
@@ -611,6 +613,24 @@ func TestPaletteDragCreatesLayerAndCanvasDragMovesIt(t *testing.T) {
 	if model.manifest.Layers[1].Bounds.X <= beforeX || model.manifest.Layers[1].Bounds.Y <= beforeY {
 		t.Fatalf("画布拖动未改变图层位置：before=(%.3f, %.3f), after=(%.3f, %.3f)", beforeX, beforeY, model.manifest.Layers[1].Bounds.X, model.manifest.Layers[1].Bounds.Y)
 	}
+}
+
+func findPaletteButtonPoint(t *testing.T, model *gioEditor, router *input.Router, frame func(), layerType caseTheme.LayerType, height int) f32.Point {
+	t.Helper()
+	const x = float32(116)
+	for y := 0; y < height; y += 4 {
+		point := f32.Pt(x, float32(y))
+		router.Queue(pointer.Event{Source: pointer.Mouse, Kind: pointer.Move, Position: point})
+		frame()
+		for index := range model.paletteButtons {
+			button := &model.paletteButtons[index]
+			if button.layerType == layerType && button.drag.Hovered() {
+				return point
+			}
+		}
+	}
+	t.Fatalf("未在组件库中找到 %s 按钮", layerType)
+	return f32.Point{}
 }
 
 func TestImportBackgroundPathUpdatesSelectedLayer(t *testing.T) {

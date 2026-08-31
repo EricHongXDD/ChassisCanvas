@@ -8,7 +8,6 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	"casescreen/internal/telemetry"
 	"casescreen/internal/theme"
 	"golang.org/x/image/font"
+	"golang.org/x/image/font/gofont/gobold"
 	"golang.org/x/image/font/gofont/gomono"
 	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
@@ -72,11 +72,18 @@ func TestHostTelemetryUsesSelectedFontFamilyAndAllFourWeights(t *testing.T) {
 	}
 }
 
-func TestWindowsSystemFontMatrixContainsEveryLogicalFamilyAndWeight(t *testing.T) {
-	if runtime.GOOS != "windows" {
-		t.Skip("系统字脸矩阵仅在 Windows 加载")
+func TestSystemFontMatrixContainsEveryLogicalFamilyAndWeight(t *testing.T) {
+	directory := t.TempDir()
+	for name, data := range map[string][]byte{
+		"msyhl.ttc": goregular.TTF, "msyh.ttc": goregular.TTF, "msyhbd.ttc": gobold.TTF,
+		"simsun.ttc": gomono.TTF, "simsunb.ttf": gomono.TTF,
+		"consola.ttf": gomono.TTF, "consolab.ttf": gobold.TTF,
+	} {
+		if err := os.WriteFile(filepath.Join(directory, name), data, 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
-	fonts := loadSystemFonts()
+	fonts := loadSystemFontsFromDirectory(directory)
 	for _, family := range []string{"pangmen", "source-han", "microsoft-yahei", "simhei", "digital", "monospace", "rounded", "serif"} {
 		for _, weight := range []string{"light", "regular", "medium", "bold"} {
 			if fonts[systemFontResourceID(family, weight)] == nil {

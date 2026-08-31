@@ -2,27 +2,28 @@ package workbench
 
 import (
 	"fmt"
-	"runtime"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"gioui.org/font"
 	"gioui.org/io/system"
 	"gioui.org/text"
+	"golang.org/x/image/font/gofont/gobold"
+	"golang.org/x/image/font/gofont/gomono"
+	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/math/fixed"
 )
 
 func TestWorkbenchFontCollectionContainsEveryLogicalFamilyAndWeight(t *testing.T) {
-	if runtime.GOOS != "windows" {
-		t.Skip("逻辑预览字体使用 Windows 字体白名单")
-	}
 	wanted := map[font.Typeface]map[font.Weight]bool{
 		workbenchTypefacePangMen: {}, workbenchTypefaceSourceHan: {},
 		workbenchTypefaceMicrosoftYaHei: {}, workbenchTypefaceSimHei: {},
 		workbenchTypefaceDigital: {}, workbenchTypefaceMonospace: {},
 		workbenchTypefaceRounded: {}, workbenchTypefaceSerif: {},
 	}
-	for _, face := range workbenchFontCollection() {
+	for _, face := range buildWorkbenchFontCollection(workbenchTestFontDirectory(t)) {
 		if weights, ok := wanted[face.Font.Typeface]; ok {
 			weights[face.Font.Weight] = true
 		}
@@ -37,15 +38,12 @@ func TestWorkbenchFontCollectionContainsEveryLogicalFamilyAndWeight(t *testing.T
 }
 
 func TestWorkbenchSourceHanNeverSharesYaHeiBottomFace(t *testing.T) {
-	if runtime.GOOS != "windows" {
-		t.Skip("逻辑预览字体使用 Windows 字体白名单")
-	}
 	type key struct {
 		typeface font.Typeface
 		weight   font.Weight
 	}
 	faces := make(map[key]font.Face)
-	for _, candidate := range workbenchFontCollection() {
+	for _, candidate := range buildWorkbenchFontCollection(workbenchTestFontDirectory(t)) {
 		faces[key{candidate.Font.Typeface, candidate.Font.Weight}] = candidate.Face
 	}
 	for _, weight := range []font.Weight{font.Light, font.Normal, font.Medium, font.Bold} {
@@ -58,6 +56,21 @@ func TestWorkbenchSourceHanNeverSharesYaHeiBottomFace(t *testing.T) {
 			t.Fatalf("Source Han 与微软雅黑的底层 face 在字重 %d 下完全相同", weight)
 		}
 	}
+}
+
+func workbenchTestFontDirectory(t *testing.T) string {
+	t.Helper()
+	directory := t.TempDir()
+	for name, data := range map[string][]byte{
+		"msyhl.ttc": goregular.TTF, "msyh.ttc": goregular.TTF, "msyhbd.ttc": gobold.TTF,
+		"simsun.ttc": gomono.TTF, "simsunb.ttf": gomono.TTF,
+		"consola.ttf": gomono.TTF, "consolab.ttf": gobold.TTF,
+	} {
+		if err := os.WriteFile(filepath.Join(directory, name), data, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return directory
 }
 
 func TestLyricsFontChoicesExcludeNonCJKFamilies(t *testing.T) {
