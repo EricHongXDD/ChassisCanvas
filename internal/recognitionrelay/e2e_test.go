@@ -214,7 +214,10 @@ func TestRecognitionV1FullClientDoubleConfirmationAndMonotonicTimeline(t *testin
 			t.Fatal(currentErr)
 		}
 		if envelope.Available {
-			t.Fatal("只有一次 deterministic 识别证据时不应通过双确认")
+			if upstream.calls.Load() < 2 {
+				t.Fatal("只有一次 deterministic 识别证据时不应通过双确认")
+			}
+			break
 		}
 		firstCandidateSeen = true
 		clock.Advance(time.Second)
