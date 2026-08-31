@@ -1,0 +1,4 @@
+-r requirements.txt
+frida>=17.0
+frida-tools>=14.0
+

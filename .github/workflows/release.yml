@@ -1,0 +1,147 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "仅构建的版本号，例如 1.0"
+        required: true
+        default: "1.0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: 测试并构建公开核心包
+    runs-on: windows-2025
+    env:
+      CGO_ENABLED: "0"
+      GOTELEMETRY: "off"
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: 配置 Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: 配置 Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: 确定版本号
+        shell: pwsh
+        env:
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            if ($env:GITHUB_REF_NAME -notmatch '^v(.+)$') {
+              throw "发布标签必须以 v 开头：$env:GITHUB_REF_NAME"
+            }
+            $version = $Matches[1]
+          } else {
+            $version = $env:MANUAL_VERSION
+          }
+          if ($version -notmatch '^\d+\.\d+(?:\.\d+){0,2}$') {
+            throw "版本号必须是 2 到 4 段数字：$version"
+          }
+          "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: 运行 Go 测试
+        shell: pwsh
+        run: go test -buildvcs=false ./...
+
+      - name: 运行 Python 测试
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check "Pillow>=10,<13"
+          python -m unittest discover -s tests -p "test_*.py"
+          python -m unittest discover -s tools/tests -p "test_*.py"
+
+      - name: 构建公开核心包
+        shell: pwsh
+        run: .\tools\build_windows.ps1 -Version $env:RELEASE_VERSION -PublicCore
+
+      - name: 校验并生成 SHA-256
+        shell: pwsh
+        run: |
+          $archive = "artifacts\ChassisCanvas-windows-x64-$env:RELEASE_VERSION-core.zip"
+          if (-not (Test-Path -LiteralPath $archive -PathType Leaf)) {
+            throw "未生成公开核心包：$archive"
+          }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $reader = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path $archive))
+          try {
+            $entries = @($reader.Entries | ForEach-Object { $_.FullName.Replace('\', '/').ToLowerInvariant() })
+          } finally {
+            $reader.Dispose()
+          }
+          foreach ($forbidden in @(
+            'hidapi.dll', 'ffmpeg.exe', 'avcodec-58.dll', 'avdevice-58.dll',
+            'avfilter-7.dll', 'avformat-58.dll', 'avutil-56.dll',
+            'swresample-3.dll', 'swscale-5.dll'
+          )) {
+            if ($entries -contains $forbidden) {
+              throw "公开核心包包含禁止分发的运行时：$forbidden"
+            }
+          }
+          if (@($entries | Where-Object { $_.EndsWith('.theme') }).Count -ne 0) {
+            throw "公开核心包不得包含厂商 Theme"
+          }
+          $archiveName = Split-Path -Leaf $archive
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash.ToLowerInvariant()
+          [System.IO.File]::WriteAllText(
+            "artifacts\SHA256SUMS.txt",
+            "$hash  $archiveName`n",
+            [System.Text.UTF8Encoding]::new($false)
+          )
+
+      - name: 保存构建产物
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-${{ github.run_id }}
+          path: |
+            artifacts/ChassisCanvas-windows-x64-*-core.zip
+            artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: 创建 GitHub 草稿 Release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: 下载构建产物
+        uses: actions/download-artifact@v8
+        with:
+          name: release-assets-${{ github.run_id }}
+          path: release-assets
+
+      - name: 创建草稿 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            release-assets/*.zip \
+            release-assets/SHA256SUMS.txt \
+            --verify-tag \
+            --generate-notes \
+            --title "ChassisCanvas $GITHUB_REF_NAME" \
+            --draft

@@ -1,0 +1,64 @@
+{
+  "id": "lyrics-overlay",
+  "name": "双行歌词浮层",
+  "width": 1024,
+  "height": 600,
+  "resources": [],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background_image",
+      "bounds": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "opacity": 1,
+      "z_index": 0,
+      "options": { "color": "#101722ff" }
+    },
+    {
+      "id": "telemetry",
+      "type": "telemetry",
+      "bounds": { "x": 0.03, "y": 0.05, "width": 0.27, "height": 0.25 },
+      "opacity": 0.82,
+      "z_index": 10,
+      "options": {
+        "fields": ["time", "Cpu_Freq", "Memory_Load"],
+        "font_size": 21,
+        "panel_color": "#00000052"
+      }
+    },
+    {
+      "id": "lyrics",
+      "type": "lyrics",
+      "bounds": { "x": 0.08, "y": 0.68, "width": 0.84, "height": 0.22 },
+      "opacity": 0.84,
+      "z_index": 30,
+      "options": {
+        "style": "player",
+        "font_family": "source-han",
+        "font_weight": "bold",
+        "align": "center",
+        "font_size": 36,
+        "next_font_size": 21,
+        "current_color": "#f7fcffff",
+        "next_color": "#b8c8daa4",
+        "accent_color": "#55e5ffff",
+        "panel_color": "#030a1292",
+        "panel_border_color": "#66e3ff3e",
+        "corner_radius": 14,
+        "outline_color": "#02070ee1",
+        "outline_width": 2,
+        "shadow": true,
+        "shadow_color": "#000000b4",
+        "shadow_offset_x": 2,
+        "shadow_offset_y": 3,
+        "shadow_blur": 3,
+        "glow_color": "#53daff42",
+        "glow_radius": 4,
+        "karaoke_highlight": true,
+        "smooth_transition": true,
+        "transition_fraction": 0.08,
+        "show_progress": true,
+        "progress_thickness": 3
+      }
+    }
+  ]
+}

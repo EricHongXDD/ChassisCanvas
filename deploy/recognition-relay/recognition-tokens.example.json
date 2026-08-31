@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "tokens": [
+    {
+      "device_id": "waveshare-7",
+      "token_sha256": "REPLACE_WITH_64_HEX_SHA256_OF_THE_DEVICE_TOKEN"
+    }
+  ]
+}
+

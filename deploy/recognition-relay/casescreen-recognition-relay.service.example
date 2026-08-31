@@ -1,0 +1,28 @@
+[Unit]
+Description=CaseScreen Recognition Relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=casescreen-relay
+Group=casescreen-relay
+EnvironmentFile=/etc/casescreen/acrcloud.env
+ExecStart=/usr/local/bin/casescreen-recognition-relay -listen 127.0.0.1:19323 -provider acrcloud -token-digests /etc/casescreen/recognition-tokens.json -native-mappings /etc/casescreen/native-id-mappings.json -auto-platform none
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
+

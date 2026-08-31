@@ -1,0 +1,55 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Go、Zig 与本地工具缓存
+/.gocache*/
+/.gomodcache*/
+/.gopath*/
+/.gotmp*/
+/.zig-cache*/
+/.zig-global-cache*/
+/.zig-local-cache*/
+/.tools/
+
+# 构建产物、抓包与厂商镜像
+/artifacts/
+/captures/
+/output/
+/.tmp/
+/tmp/
+*.pcapng
+*.log
+*.img
+*.iso
+*.download
+*.exe
+*.dll
+*.so
+*.dylib
+*.zip
+
+# 本机配置与凭据
+/.env
+/.env.*
+!*.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+*.token
+*.cookie
+*.cookies
+*cookies.txt
+/device-config.json
+/CaseScreen-data/
+
+# 未获得公开再分发许可的厂商主题模板
+/internal/api/assets/*.Theme

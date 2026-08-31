@@ -1,0 +1,93 @@
+{
+  "id": "music-bars-overlay",
+  "name": "粉紫霓虹频谱与歌词",
+  "width": 1024,
+  "height": 600,
+  "resources": [],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background_image",
+      "bounds": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "opacity": 1,
+      "z_index": 0,
+      "options": { "color": "#07131fff" }
+    },
+    {
+      "id": "telemetry",
+      "type": "telemetry",
+      "bounds": { "x": 0.03, "y": 0.07, "width": 0.24, "height": 0.32 },
+      "opacity": 1,
+      "z_index": 10,
+      "options": {
+        "fields": ["time", "Cpu_Freq", "Memory_Load"],
+        "panel_color": "#00000058",
+        "color": "#f5fbffff"
+      }
+    },
+    {
+      "id": "bars",
+      "type": "audio_bars",
+      "bounds": { "x": 0.04, "y": 0.64, "width": 0.92, "height": 0.27 },
+      "opacity": 0.86,
+      "z_index": 20,
+      "options": {
+        "source": "system",
+        "style": "neon",
+        "bar_shape": "capsule",
+        "direction": "bottom",
+        "count": 48,
+        "gap": 3,
+        "thickness": 3,
+        "color": "#ff54c8ff",
+        "gradient_start": "#ff54c8ff",
+        "gradient_end": "#8b5cf6ff",
+        "panel_color": "#00000000",
+        "glow": true,
+        "glow_radius": 7,
+        "gain": 1.2,
+        "sensitivity": 0.92,
+        "min_amplitude": 0,
+        "max_amplitude": 1,
+        "smoothing": 0.14,
+        "noise_gate": 0.014,
+        "contrast": 2.15,
+        "separation": 0.72,
+        "bass_boost": 1.45,
+        "floor_reduction": 0.66
+      }
+    },
+    {
+      "id": "lyrics",
+      "type": "lyrics",
+      "bounds": { "x": 0.30, "y": 0.28, "width": 0.52, "height": 0.24 },
+      "opacity": 0.82,
+      "z_index": 30,
+      "options": {
+        "style": "player",
+        "font_family": "source-han",
+        "font_weight": "bold",
+        "align": "center",
+        "font_size": 30,
+        "next_font_size": 18,
+        "current_color": "#f7fcffff",
+        "next_color": "#b8c8daa4",
+        "accent_color": "#55e5ffff",
+        "panel_color": "#030a1292",
+        "panel_border_color": "#66e3ff3e",
+        "outline_color": "#02070ee1",
+        "outline_width": 2,
+        "shadow": true,
+        "shadow_color": "#000000b4",
+        "shadow_offset_x": 2,
+        "shadow_offset_y": 3,
+        "shadow_blur": 3,
+        "glow_color": "#53daff42",
+        "glow_radius": 4,
+        "karaoke_highlight": true,
+        "smooth_transition": true,
+        "show_progress": true
+      }
+    }
+  ]
+}

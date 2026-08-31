@@ -1,0 +1,92 @@
+{
+  "id": "music-ring-overlay",
+  "name": "青紫连续波环与歌词",
+  "width": 480,
+  "height": 480,
+  "resources": [],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background_image",
+      "bounds": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "opacity": 1,
+      "z_index": 0,
+      "options": { "color": "#080d18ff" }
+    },
+    {
+      "id": "ring",
+      "type": "audio_ring",
+      "bounds": { "x": 0.08, "y": 0.06, "width": 0.84, "height": 0.84 },
+      "opacity": 1,
+      "z_index": 20,
+      "options": {
+        "source": "system",
+        "style": "waveform",
+        "direction": "outward",
+        "count": 48,
+        "color": "#55e5ffff",
+        "gradient_start": "#55e5ffff",
+        "gradient_end": "#ff54c8ff",
+        "panel_color": "#00000000",
+        "inner_radius": 0.62,
+        "thickness": 1,
+        "glow": true,
+        "glow_radius": 7,
+        "gain": 1.18,
+        "sensitivity": 0.9,
+        "min_amplitude": 0,
+        "max_amplitude": 1,
+        "smoothing": 0.13,
+        "noise_gate": 0.014,
+        "contrast": 2.2,
+        "separation": 0.76,
+        "bass_boost": 1.42,
+        "floor_reduction": 0.66
+      }
+    },
+    {
+      "id": "telemetry",
+      "type": "telemetry",
+      "bounds": { "x": 0.31, "y": 0.25, "width": 0.38, "height": 0.27 },
+      "opacity": 0.78,
+      "z_index": 25,
+      "options": {
+        "fields": ["Cpu_Freq", "Memory_Load"],
+        "font_size": 17,
+        "panel_color": "#00000050"
+      }
+    },
+    {
+      "id": "lyrics",
+      "type": "lyrics",
+      "bounds": { "x": 0.12, "y": 0.68, "width": 0.76, "height": 0.20 },
+      "opacity": 0.82,
+      "z_index": 30,
+      "options": {
+        "style": "karaoke",
+        "font_family": "rounded",
+        "font_weight": "bold",
+        "align": "center",
+        "font_size": 21,
+        "next_font_size": 13,
+        "current_color": "#fff7fdff",
+        "next_color": "#e2c5dfa8",
+        "accent_color": "#ff70cfff",
+        "panel_color": "#18091fa0",
+        "panel_border_color": "#ff70cf48",
+        "outline_color": "#140516e8",
+        "outline_width": 2,
+        "shadow": true,
+        "shadow_color": "#000000c0",
+        "shadow_offset_x": 2,
+        "shadow_offset_y": 3,
+        "shadow_blur": 3,
+        "glow_color": "#ff70cf46",
+        "glow_radius": 5,
+        "karaoke_highlight": true,
+        "smooth_transition": true,
+        "show_progress": true
+      }
+    }
+  ]
+}
