@@ -19,7 +19,7 @@ import (
 	"casescreen/internal/workbench"
 )
 
-const desktopVersion = "1.0"
+const desktopVersion = "1.0.1"
 
 const (
 	desktopInstanceMutexName   = `Local\CaseScreenDesktop`

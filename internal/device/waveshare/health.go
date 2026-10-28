@@ -12,7 +12,7 @@ import (
 
 const healthLockWait = 250 * time.Millisecond
 
-// CheckConnection 通过无副作用的 find_device 握手确认屏幕仍然在线。
+// CheckConnection 通过 find_device 握手确认屏幕仍然在线，并维持息屏意图。
 // 驻留静态主题可能很长时间没有遥测发送，不能只依赖旧串口句柄。
 func (driver *Driver) CheckConnection(ctx context.Context) error {
 	if !driver.lockHealthCheck(ctx) {
@@ -27,7 +27,9 @@ func (driver *Driver) CheckConnection(ctx context.Context) error {
 		return fmt.Errorf("微雪设备健康检查: %w", err)
 	}
 	driver.updateDeviceInfo(response.Payload)
-	return nil
+	// 固件重启或主题线程可能在 USB 会话仍在线时恢复背光，不能只信任
+	// 旧 ACK。低频补发零亮度，也覆盖主机刚开机时屏端尚未启动完成的情况。
+	return driver.enforcePoweredOffLocked(ctx)
 }
 
 func (driver *Driver) lockHealthCheck(ctx context.Context) bool {

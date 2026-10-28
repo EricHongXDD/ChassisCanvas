@@ -277,6 +277,15 @@ func (service *Service) resumeHostFrameDelivery(deviceID string) {
 	if active {
 		service.wakeRenderer()
 	}
+	if status.Connected && status.Info.Capabilities.SmallTelemetry {
+		// 微雪息屏期间暂停动态包；恢复后立即取最新歌词和遥测，
+		// 不等待用户配置的下一次采集周期，也不重放关屏期间的旧帧。
+		service.wakeSmallPacket()
+		select {
+		case service.telemetryWake <- struct{}{}:
+		default:
+		}
+	}
 }
 
 func (service *Service) invalidateHostFrameDelivery(deviceID string) {

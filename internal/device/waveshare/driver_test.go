@@ -134,14 +134,15 @@ func TestSetBrightnessUsesConfirmedCommandAndDefault(t *testing.T) {
 	if err := driver.SetBrightness(context.Background(), 0); err != nil {
 		t.Fatal(err)
 	}
-	packet, err := protocol.DecodePacket(port.Bytes())
+	// 息屏会在显示线程稳定后补发同一零值，两次都必须确认 ACK。
+	packet, err := protocol.DecodePacket(port.Bytes()[:port.Len()/2])
 	if err != nil {
 		t.Fatal(err)
 	}
 	if packet.Type != protocol.PacketTypeCommand || packet.Command != protocol.CommandSetBrightness || string(packet.Payload) != "0" {
 		t.Fatalf("亮度命令不符合原厂协议: type=%v command=%v payload=%q", packet.Type, packet.Command, packet.Payload)
 	}
-	if !reflect.DeepEqual(gate.commands, []protocol.Command{protocol.CommandSetBrightness}) {
+	if !reflect.DeepEqual(gate.commands, []protocol.Command{protocol.CommandSetBrightness, protocol.CommandSetBrightness}) {
 		t.Fatalf("ACK 等待命令=%v", gate.commands)
 	}
 }

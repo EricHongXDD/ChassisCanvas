@@ -49,8 +49,11 @@ type Driver struct {
 	spectrumMu   sync.RWMutex
 	backgroundMu sync.Mutex
 	connected    bool
-	deviceFiles  map[string]uint32
-	storage      device.StorageInfo
+	// brightnessKnown 区分尚未设置亮度和明确的零亮度；断线时保留意图。
+	brightnessKnown bool
+	brightness      int
+	deviceFiles     map[string]uint32
+	storage         device.StorageInfo
 	// lastTelemetryPayload 只在收到 ACK 后更新；当前/下一句完全相同时
 	// 可以直接跳过，重新连接或切换主题时会清空并强制重发。
 	lastTelemetryPayload  []byte
@@ -148,7 +151,7 @@ func (driver *Driver) Connect(ctx context.Context) error {
 	if !reported || storageErr != nil {
 		driver.refreshStorageAfterConnectLocked(ctx)
 	}
-	return nil
+	return driver.enforcePoweredOffLocked(ctx)
 }
 
 // RefreshStorage 查询 TF 卡容量。这是可选能力：旧固件不支持、超时
@@ -487,6 +490,9 @@ func (driver *Driver) SendTelemetry(ctx context.Context, snapshot telemetry.Snap
 	if driver.telemetryPayloadEqual(payload) {
 		return nil
 	}
+	if driver.poweredOffLocked() {
+		return nil
+	}
 	_, err := driver.sendAndWaitLocked(ctx, protocol.CommandSystemData, payload)
 	if err == nil {
 		driver.storeTelemetryPayload(payload)
@@ -509,6 +515,17 @@ func (driver *Driver) SetBrightness(ctx context.Context, value int) error {
 	}
 	if _, err := driver.sendAndWaitLocked(ctx, protocol.CommandSetBrightness, []byte(strconv.Itoa(value))); err != nil {
 		return fmt.Errorf("设置微雪屏幕亮度: %w", err)
+	}
+	driver.brightnessKnown = true
+	driver.brightness = value
+	driver.clearDynamicPayloadCaches()
+	if value == 0 {
+		// 固件先投递显示线程再返回 ACK；主题恢复可能随后覆盖背光。
+		// 等待一次显示调度后补发零值，不使用会短暂点亮屏幕的开关切换。
+		if err := waitForContext(ctx, 150*time.Millisecond); err != nil {
+			return err
+		}
+		return driver.enforcePoweredOffLocked(ctx)
 	}
 	return nil
 }
