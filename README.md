@@ -4,6 +4,14 @@
 >
 > **兼容名称：** 当前 Windows 可执行文件、配置目录和协议键仍沿用 `CaseScreen`，避免破坏既有设备与主题；GitHub 项目正式名称为 `ChassisCanvas`。
 
+Windows 安装版见 [v1.0.2 Release](https://github.com/EricHongXDD/ChassisCanvas/releases/tag/v1.0.2) 中的
+`ChassisCanvas-1.0.2-Core-Setup.msi`：双击后按向导安装到当前用户目录，提供开始菜单入口、卸载入口和可选的开机启动。
+公开核心安装版不含 FFmpeg、hidapi DLL 或厂商 Theme；与 ZIP 核心版的功能边界相同。
+已有本机完整安装版的用户应使用本机生成的 `CaseScreen-1.0.2-Setup.msi` 升级，以保留现有运行时。
+
+安装包可用 WiX 3.14 和 `tools/build_msi.ps1 -Version 1.0.2 -SourceDirectory <发行目录>` 构建；
+只有为自己的设备打包现有完整发行目录时才使用 `-PrivateLocal`，该产物不应上传公开 Release。
+
 ChassisCanvas 是面向 Windows 的机箱副屏统一控制与主题创作软件，支持：
 
 - 微雪 7 英寸与 8.8 英寸 USB Monitor（CDC ACM / 屏内 Linux 渲染）；
