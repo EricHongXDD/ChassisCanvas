@@ -1,6 +1,6 @@
 # ChassisCanvas 机箱副屏统一控制与主题工作台
 
-> **正式发布版本：** `1.0.1`
+> **正式发布版本：** `1.0.2`
 >
 > **兼容名称：** 当前 Windows 可执行文件、配置目录和协议键仍沿用 `CaseScreen`，避免破坏既有设备与主题；GitHub 项目正式名称为 `ChassisCanvas`。
 
@@ -38,7 +38,7 @@ Windows QQ 音乐 / 网易云音乐
 
 当前平台适配状态必须区分“歌词接口支持”和“正在播放歌曲的准确 ID 可获得”：
 
-> **发行边界：** 下文对应正式版 `1.0.1` 的当前源码与发布边界。从源码运行 `go test` 只验证工作树；只有 `CaseScreen-windows-x64-1.0.1.zip`、二进制哈希及 [Windows 正式版验证](docs/windows-verification.md) 均对应同一次构建，才能宣称相应适配器已经进入发行物。
+> **发行边界：** 下文对应正式版 `1.0.2` 的当前源码与发布边界。从源码运行 `go test` 只验证工作树；只有 `CaseScreen-windows-x64-1.0.2.zip`、二进制哈希及 [Windows 正式版验证](docs/windows-verification.md) 均对应同一次构建，才能宣称相应适配器已经进入发行物。
 
 - 网易云：使用无需重启客户端、无需调试端口和额外常驻程序的主机内置只读内存适配器。它只接受唯一且完整的当前播放 ID、状态和时间轴，并按同一 ID 读取有界 `playingList` 元数据；模块版本、特征、结构、进程、同 ID 元数据或可选 GSMTC 证据存在歧义时立即失败关闭，不会回退到历史数据库、窗口标题或标题搜索冒充当前歌曲。
 - QQ：只使用无需额外常驻程序或 DLL 注入的 `QQMusic.exe` 只读内存适配器。它只申请查询和读权限、最多检查 8 个同名进程；仅当 `QQMusic.dll` 整体不超过 20 MiB 时才完整扫描并缓存已验证结构地址，切歌日常只读 116 字节结构和有界 UTF-8 字段。模块超限、分块短读、候选负缓存或多进程证据不一致均整轮失败关闭。通过后按 songId 查询单曲详情，严格核对标题、全部歌手、专辑和时长，再取得 songmid 与同平台歌词。已在线验证 `songId=97773` 精确映射到 `songmid=0039MnYb0qxYhV`；映射使用固定 512 首的有界内存缓存。内存结构不是腾讯公开稳定 IPC，客户端更新后必须重新真机验收，不能退化为按歌名猜测。
@@ -100,14 +100,14 @@ go test -buildvcs=false ./...
 
 ## GitHub 公开发布
 
-推送与源码版本一致的标签（例如 `v1.0.1`）后，Release Action 会在 GitHub 托管的 Windows 环境中重新测试并构建 `ChassisCanvas-windows-x64-1.0.1-core.zip`，同时生成 SHA-256 校验文件并创建草稿 Release，待真机验收后由维护者发布。手动运行工作流只生成 Actions 构建产物，不创建 Release。
+推送与源码版本一致的标签（例如 `v1.0.2`）后，Release Action 会在 GitHub 托管的 Windows 环境中重新测试并构建 `ChassisCanvas-windows-x64-1.0.2-core.zip`，同时生成 SHA-256 校验文件并创建草稿 Release，待真机验收后由维护者发布。手动运行工作流只生成 Actions 构建产物，不创建 Release。
 
 公开核心包不会包含来源未核验的 FFmpeg、hidapi、厂商安装程序、微雪原厂 Theme 或 TF 卡镜像。包内程序仍使用兼容文件名 `CaseScreen.exe` 和 `CaseScreenDesktop.exe`；视频处理、酷冷至尊设备支持与微雪主题编译所需文件，应由用户从自己有权使用的设备、原厂软件或其他许可清晰的来源取得。详细边界见 [第三方运行时说明](docs/third-party-notices.md)。
 
 在本机仅生成同样的公开核心包：
 
 ```powershell
-.\tools\build_windows.ps1 -Version 1.0.1 -PublicCore
+.\tools\build_windows.ps1 -Version 1.0.2 -PublicCore
 ```
 
 发行脚本使用 Windows GUI 子系统构建，双击启动只显示托盘图标，不弹出控制台窗口；诊断日志写在配置文件旁的 `casescreen.log`。

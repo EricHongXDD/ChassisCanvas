@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"casescreen/internal/device"
 	protocol "casescreen/internal/protocol/waveshare"
 	"casescreen/internal/telemetry"
 )
@@ -94,11 +95,11 @@ func TestPoweredOffSkipsDynamicPacketsAndResendsSameValuesOnRestore(t *testing.T
 		t.Fatal(err)
 	}
 	before := len(port.commands)
-	if err := driver.SendTelemetry(context.Background(), snapshot); err != nil {
-		t.Fatal(err)
+	if err := driver.SendTelemetry(context.Background(), snapshot); !errors.Is(err, device.ErrRealtimeFrameDropped) {
+		t.Fatalf("跳过的遥测被当作已确认: %v", err)
 	}
-	if err := driver.SendSpectrumValues(context.Background(), values); err != nil {
-		t.Fatal(err)
+	if err := driver.SendSpectrumValues(context.Background(), values); !errors.Is(err, device.ErrRealtimeFrameDropped) {
+		t.Fatalf("跳过的频谱被当作已确认: %v", err)
 	}
 	if len(port.commands) != before {
 		t.Fatal("息屏期间仍向屏端发送显示更新")

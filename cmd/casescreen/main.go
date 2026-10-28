@@ -29,7 +29,7 @@ import (
 	"casescreen/internal/trayapp"
 )
 
-const version = "1.0.1"
+const version = "1.0.2"
 
 func main() {
 	if err := run(); err != nil {

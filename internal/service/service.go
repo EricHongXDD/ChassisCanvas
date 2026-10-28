@@ -1350,6 +1350,11 @@ func (service *Service) refreshDeviceStateAfterTheme(ctx context.Context, driver
 			}
 		}
 		if err := driver.SendTelemetry(ctx, snapshot); err != nil {
+			// 息屏期间跳过的动态包没有进入硬件，不能记为歌词已清空。
+			// 主题本身已提交成功，恢复后再由唤醒事件补发当前状态。
+			if errors.Is(err, device.ErrRealtimeFrameDropped) {
+				return nil
+			}
 			service.setTransferError(driver.Info().ID, err)
 			return err
 		}

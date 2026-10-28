@@ -175,7 +175,7 @@ func (driver *Driver) SendSpectrumValues(ctx context.Context, values map[string]
 		return fmt.Errorf("微雪屏幕未连接")
 	}
 	if driver.poweredOffLocked() {
-		return nil
+		return device.ErrRealtimeFrameDropped
 	}
 	now = driver.currentSpectrumTime()
 	equal, rateLimited = driver.spectrumPayloadState(payload, now)

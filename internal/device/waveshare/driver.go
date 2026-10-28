@@ -491,7 +491,7 @@ func (driver *Driver) SendTelemetry(ctx context.Context, snapshot telemetry.Snap
 		return nil
 	}
 	if driver.poweredOffLocked() {
-		return nil
+		return device.ErrRealtimeFrameDropped
 	}
 	_, err := driver.sendAndWaitLocked(ctx, protocol.CommandSystemData, payload)
 	if err == nil {

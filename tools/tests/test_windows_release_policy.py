@@ -296,7 +296,7 @@ class WindowsReleasePolicyTests(unittest.TestCase):
         self.assertIsNotNone(service_version)
         self.assertIsNotNone(desktop_version)
         self.assertEqual(service_version.group(1), desktop_version.group(1))
-        self.assertEqual(service_version.group(1), "1.0.1")
+        self.assertEqual(service_version.group(1), "1.0.2")
         self.assertIn('json:"application_version"', desktop)
         self.assertIn("body.ApplicationVersion != desktopVersion", desktop)
         self.assertIn("workbench.NewAPI(serviceURL, desktopVersion)", desktop)
@@ -304,7 +304,7 @@ class WindowsReleasePolicyTests(unittest.TestCase):
             api, r'"application_version":\s+server\.applicationVersion'
         )
 
-    def test_formal_release_uses_1_0_1_names_everywhere(self) -> None:
+    def test_formal_release_uses_1_0_2_names_everywhere(self) -> None:
         script = (REPOSITORY_ROOT / "tools" / "build_windows.ps1").read_text(
             encoding="utf-8"
         )
@@ -312,7 +312,7 @@ class WindowsReleasePolicyTests(unittest.TestCase):
             r'\[string\]\$Version\s*=\s*"([^"]+)"', script
         )
         self.assertIsNotNone(default_version)
-        self.assertEqual(default_version.group(1), "1.0.1")
+        self.assertEqual(default_version.group(1), "1.0.2")
         self.assertIn('"artifacts\\CaseScreen-windows-x64-{0}" -f $Version', script)
         self.assertIn(
             '"artifacts\\CaseScreen-windows-x64-{0}.zip" -f $Version', script
@@ -322,8 +322,8 @@ class WindowsReleasePolicyTests(unittest.TestCase):
         verification = (
             REPOSITORY_ROOT / "docs" / "windows-verification.md"
         ).read_text(encoding="utf-8")
-        self.assertRegex(readme, r"(?m)^> \*\*正式发布版本：\*\* `1\.0\.1`$")
-        self.assertRegex(verification, r"(?m)^# Windows 正式版 1\.0\.1 验证$")
+        self.assertRegex(readme, r"(?m)^> \*\*正式发布版本：\*\* `1\.0\.2`$")
+        self.assertRegex(verification, r"(?m)^# Windows 正式版 1\.0\.2 验证$")
         self.assertNotIn("beta.17", readme)
         self.assertNotIn("beta.17", verification)
 
